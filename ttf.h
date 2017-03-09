@@ -24,9 +24,12 @@
 #define MAINTAINER <HTTPP/gareus.org/rgareus#me>
 #define MIDIEXTURI <HTTPP/lv2plug.in/ns/ext/midi#MidiEvent>
 
-#define TTF_DEF(DOAPNAME, INSUPPORTS) \
-	a lv2:Plugin, lv2:FilterPlugin ; \
+#define TTF_DEF(DOAPNAME, MODNAME, INSUPPORTS) \
+	a lv2:Plugin, lv2:UtilityPlugin ; \
 	doap:name DOAPNAME ; \
+	mod:label MODNAME ; \
+	@MODBRAND@ \
+	@VERSION@ \
 	doap:license <HTTPP/usefulinc.com/doap/licenses/gpl> ; \
   lv2:project <HTTPP/gareus.org/oss/lv2/midifilter> ; \
 	lv2:optionalFeature lv2:hardRTCapable ; \
@@ -51,7 +54,7 @@
 	] , [ \
 		a lv2:OutputPort, \
 			lv2:ControlPort ; \
-		lv2:name "latency (samples)" ; \
+		lv2:name "latency" ; \
 		lv2:index 2 ; \
 		lv2:symbol "latency" ; \
 		lv2:minimum 0 ; \
@@ -59,7 +62,7 @@
 		lv2:portProperty lv2:reportsLatency, lv2:integer, pprops:notOnGUI; \
 	]
 
-#define TTF_DEFAULTDEF(DOAPNAME) TTF_DEF(DOAPNAME,)
+#define TTF_DEFAULTDEF(DOAPNAME, MODNAME) TTF_DEF(DOAPNAME, MODNAME,)
 
 #define TTF_PORT(TYPE, IDX, SYM, DESC, VMIN, VMAX, VDFLT, ATTR) \
 	[ \
@@ -84,29 +87,32 @@
 	TTF_IPORT(IDX, SYM, DESC, VMIN, VMAX, VDFLT, lv2:portProperty lv2:integer)
 
 #define TTF_IPORTTOGGLE(IDX, SYM, DESC, VDFLT) \
-	TTF_IPORT(IDX, SYM, DESC, 0.0, 1.0, VDFLT, lv2:portProperty lv2:integer; lv2:portProperty lv2:toggled)
+	TTF_IPORT(IDX, SYM, DESC, 0, 1, VDFLT, lv2:portProperty lv2:integer; lv2:portProperty lv2:toggled)
 
 #define PORTENUM16 \
-	lv2:scalePoint [ rdfs:label "01" ; rdf:value  1.0 ] ; \
-	lv2:scalePoint [ rdfs:label "02" ; rdf:value  2.0 ] ; \
-	lv2:scalePoint [ rdfs:label "03" ; rdf:value  3.0 ] ; \
-	lv2:scalePoint [ rdfs:label "04" ; rdf:value  4.0 ] ; \
-	lv2:scalePoint [ rdfs:label "05" ; rdf:value  5.0 ] ; \
-	lv2:scalePoint [ rdfs:label "06" ; rdf:value  6.0 ] ; \
-	lv2:scalePoint [ rdfs:label "07" ; rdf:value  7.0 ] ; \
-	lv2:scalePoint [ rdfs:label "08" ; rdf:value  8.0 ] ; \
-	lv2:scalePoint [ rdfs:label "09" ; rdf:value  9.0 ] ; \
-	lv2:scalePoint [ rdfs:label "10" ; rdf:value 10.0 ] ; \
-	lv2:scalePoint [ rdfs:label "11" ; rdf:value 11.0 ] ; \
-	lv2:scalePoint [ rdfs:label "12" ; rdf:value 12.0 ] ; \
-	lv2:scalePoint [ rdfs:label "13" ; rdf:value 13.0 ] ; \
-	lv2:scalePoint [ rdfs:label "14" ; rdf:value 14.0 ] ; \
-	lv2:scalePoint [ rdfs:label "15" ; rdf:value 15.0 ] ; \
-	lv2:scalePoint [ rdfs:label "16" ; rdf:value 16.0 ] ; \
+	lv2:scalePoint [ rdfs:label "01" ; rdf:value  1 ] ; \
+	lv2:scalePoint [ rdfs:label "02" ; rdf:value  2 ] ; \
+	lv2:scalePoint [ rdfs:label "03" ; rdf:value  3 ] ; \
+	lv2:scalePoint [ rdfs:label "04" ; rdf:value  4 ] ; \
+	lv2:scalePoint [ rdfs:label "05" ; rdf:value  5 ] ; \
+	lv2:scalePoint [ rdfs:label "06" ; rdf:value  6 ] ; \
+	lv2:scalePoint [ rdfs:label "07" ; rdf:value  7 ] ; \
+	lv2:scalePoint [ rdfs:label "08" ; rdf:value  8 ] ; \
+	lv2:scalePoint [ rdfs:label "09" ; rdf:value  9 ] ; \
+	lv2:scalePoint [ rdfs:label "10" ; rdf:value 10 ] ; \
+	lv2:scalePoint [ rdfs:label "11" ; rdf:value 11 ] ; \
+	lv2:scalePoint [ rdfs:label "12" ; rdf:value 12 ] ; \
+	lv2:scalePoint [ rdfs:label "13" ; rdf:value 13 ] ; \
+	lv2:scalePoint [ rdfs:label "14" ; rdf:value 14 ] ; \
+	lv2:scalePoint [ rdfs:label "15" ; rdf:value 15 ] ; \
+	lv2:scalePoint [ rdfs:label "16" ; rdf:value 16 ] ; \
 	lv2:portProperty lv2:integer; lv2:portProperty lv2:enumeration;
 
+#define SPX(LBL,VAL) \
+	lv2:scalePoint [ rdfs:label LBL ; rdf:value VAL ] ;
+
 #define PORTENUMZ(ZEROLABEL) \
-	lv2:scalePoint [ rdfs:label ZEROLABEL; rdf:value  0.0 ] ; \
+	lv2:scalePoint [ rdfs:label ZEROLABEL; rdf:value  0 ] ; \
 	PORTENUM16
 
 #define DOC_CHANZ \
@@ -116,18 +122,18 @@
 	rdfs:comment "MIDI Channel (1..16) on which the filter is active; 0: any). Data on other channels is passed though unmodified."
 
 #define NOTENAMES \
-	lv2:scalePoint [ rdfs:label "C"  ; rdf:value 0.0 ] ; \
-	lv2:scalePoint [ rdfs:label "C#" ; rdf:value 1.0 ] ; \
-	lv2:scalePoint [ rdfs:label "D"  ; rdf:value 2.0 ] ; \
-	lv2:scalePoint [ rdfs:label "D#" ; rdf:value 3.0 ] ; \
-	lv2:scalePoint [ rdfs:label "E"  ; rdf:value 4.0 ] ; \
-	lv2:scalePoint [ rdfs:label "F"  ; rdf:value 5.0 ] ; \
-	lv2:scalePoint [ rdfs:label "F#" ; rdf:value 6.0 ] ; \
-	lv2:scalePoint [ rdfs:label "G"  ; rdf:value 7.0 ] ; \
-	lv2:scalePoint [ rdfs:label "G#" ; rdf:value 8.0 ] ; \
-	lv2:scalePoint [ rdfs:label "A"  ; rdf:value 9.0 ] ; \
-	lv2:scalePoint [ rdfs:label "A#" ; rdf:value 10.0 ] ; \
-	lv2:scalePoint [ rdfs:label "B"  ; rdf:value 11.0 ] ; \
+	lv2:scalePoint [ rdfs:label "C"  ; rdf:value 0 ] ; \
+	lv2:scalePoint [ rdfs:label "C#" ; rdf:value 1 ] ; \
+	lv2:scalePoint [ rdfs:label "D"  ; rdf:value 2 ] ; \
+	lv2:scalePoint [ rdfs:label "D#" ; rdf:value 3 ] ; \
+	lv2:scalePoint [ rdfs:label "E"  ; rdf:value 4 ] ; \
+	lv2:scalePoint [ rdfs:label "F"  ; rdf:value 5 ] ; \
+	lv2:scalePoint [ rdfs:label "F#" ; rdf:value 6 ] ; \
+	lv2:scalePoint [ rdfs:label "G"  ; rdf:value 7 ] ; \
+	lv2:scalePoint [ rdfs:label "G#" ; rdf:value 8 ] ; \
+	lv2:scalePoint [ rdfs:label "A"  ; rdf:value 9 ] ; \
+	lv2:scalePoint [ rdfs:label "A#" ; rdf:value 10 ] ; \
+	lv2:scalePoint [ rdfs:label "B"  ; rdf:value 11 ] ; \
 	lv2:portProperty lv2:integer; lv2:portProperty lv2:enumeration;
 
 #define NOTENAMESOFF \
@@ -158,6 +164,20 @@
 	a lv2:Plugin ; \
 	lv2:binary <@LV2NAME@@LIB_EXT@>  ; \
 	rdfs:seeAlso <@LV2NAME@.ttl> . \
+
+#elif (defined MX_MODGUI)
+
+#define MFD_FLT(ID, FNX) \
+	<HTTPP/gareus.org/oss/lv2/midifilterHASH ## FNX> \
+	modgui:gui [ \
+		modgui:resourcesDirectory <modgui> ; \
+		modgui:iconTemplate <modgui/icon_DASH_ ## FNX ##_DOT_html> ; \
+		modgui:stylesheet   <modgui/x42-style.css> ; \
+		modgui:screenshot   <modgui/screenshot_DASH_ ## FNX ##_DOT_png> ; \
+		modgui:thumbnail    <modgui/thumbnail_DASH_ ## FNX ##_DOT_png> ; \
+		modgui:brand "x42" ; \
+		modgui:label # FNX ; \
+	].
 
 #else
 

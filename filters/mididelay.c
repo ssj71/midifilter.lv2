@@ -3,10 +3,10 @@ MFD_FILTER(mididelay)
 #ifdef MX_TTF
 
 	mflt:mididelay
-	TTF_DEF("MIDI Delayline", ; atom:supports time:Position)
-	, TTF_IPORT( 0, "bpmsrc",  "BPM source", 0.0, 1.0,  1.0,
-			lv2:scalePoint [ rdfs:label "Control Port" ; rdf:value 0.0 ] ;
-			lv2:scalePoint [ rdfs:label "Plugin Host (if available)" ; rdf:value 1.0 ] ;
+	TTF_DEF("MIDI Delayline", "MIDI Delayline", ; atom:supports time:Position)
+	, TTF_IPORT( 0, "bpmsrc",  "BPM source", 0, 1, 1,
+			lv2:scalePoint [ rdfs:label "Control Port" ; rdf:value 0 ] ;
+			lv2:scalePoint [ rdfs:label "Plugin Host (if available)" ; rdf:value 1 ] ;
 			lv2:portProperty lv2:integer; lv2:portProperty lv2:enumeration;
 			)
 
@@ -23,7 +23,7 @@ MFD_FILTER(mididelay)
 			rdfs:comment "delay length in base-unit")
 	, TTF_IPORT( 3, "delayRandom", "Randomize [Beats]", 0.0, 1.0,  0.0,
 			rdfs:comment "randomization factor")
-	; rdfs:comment "MIDI delay line. Delay all MIDI events by a given time which is give as BPM and beats. If the delay includes a random factor, this effect takes care of always keeping note on/off events sequential regardles of the randomization."
+	; rdfs:comment "MIDI delay line. Delay all MIDI events by a given time which is given as BPM and beats. If the delay includes a random factor, this effect takes care of always keeping note on/off events sequential regardless of the randomization."
 	.
 
 #elif defined MX_CODE
@@ -69,7 +69,7 @@ filter_midi_mididelay(MidiFilter* self,
 	}
 	if (bpm <= 0) bpm = 60;
 
-	uint32_t delay = floor(self->samplerate * (*self->cfg[2]) * 60.0 / bpm);
+	int delay = floor(self->samplerate * (*self->cfg[2]) * 60.0 / bpm);
 	float rnd_val = self->samplerate * (*self->cfg[3]) * 60.0 / bpm;
 	float rnd_off = 0;
 

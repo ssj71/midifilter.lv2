@@ -3,24 +3,24 @@ MFD_FILTER(midistrum)
 #ifdef MX_TTF
 
 	mflt:midistrum
-	TTF_DEF("MIDI Strum", ; atom:supports time:Position)
-	, TTF_IPORT( 0, "bpmsrc",  "BPM source", 0.0, 1.0,  1.0,
-			lv2:scalePoint [ rdfs:label "Control Port" ; rdf:value 0.0 ] ;
-			lv2:scalePoint [ rdfs:label "Plugin Host (if available)" ; rdf:value 1.0 ] ;
+	TTF_DEF("MIDI Strum", "MIDI Strum", ; atom:supports time:Position)
+	, TTF_IPORT( 0, "bpmsrc",  "BPM source", 0, 1, 1,
+			lv2:scalePoint [ rdfs:label "Control Port" ; rdf:value 0 ] ;
+			lv2:scalePoint [ rdfs:label "Plugin Host (if available)" ; rdf:value 1 ] ;
 			lv2:portProperty lv2:integer; lv2:portProperty lv2:enumeration;
 			)
 	, TTF_IPORT(1, "bpm",  "BPM", 1.0, 280.0,  120.0, units:unit units:bpm;
 			rdfs:comment "base unit for the time (unless host provides BPM)")
-	, TTF_IPORT( 2, "mode",  "Strum Direction", 0.0, 3.0,  2.0,
-			lv2:scalePoint [ rdfs:label "Always Down (low notes first)" ; rdf:value 0.0 ] ;
-			lv2:scalePoint [ rdfs:label "Always Up (high notes first)" ; rdf:value 1.0 ] ;
-			lv2:scalePoint [ rdfs:label "Alternate" ; rdf:value 2.0 ] ;
-			lv2:scalePoint [ rdfs:label "Up/Down Beat" ; rdf:value 3.0 ] ;
-			lv2:scalePoint [ rdfs:label "Up/Down 8th" ; rdf:value 4.0 ] ;
+	, TTF_IPORT( 2, "mode",  "Strum Direction", 0, 4, 2,
+			lv2:scalePoint [ rdfs:label "Always Down (low notes first)" ; rdf:value 0 ] ;
+			lv2:scalePoint [ rdfs:label "Always Up (high notes first)" ; rdf:value 1 ] ;
+			lv2:scalePoint [ rdfs:label "Alternate" ; rdf:value 2 ] ;
+			lv2:scalePoint [ rdfs:label "Up/Down Beat" ; rdf:value 3 ] ;
+			lv2:scalePoint [ rdfs:label "Up/Down 8th" ; rdf:value 4 ] ;
 			lv2:portProperty lv2:integer; lv2:portProperty lv2:enumeration;
 			rdfs:comment ""
 			)
-	, TTF_IPORT(3, "collect", "Note Collect Timeout [ms]", 0.0, 300,  15,
+	, TTF_IPORT(3, "collect", "Note Collect Timeout [ms]", 0.0, 300.0, 15.0,
 			rdfs:comment "Time to wait for chord to be 'complete'. Keys pressed withing given timeframe will be combined into one chord.")
 	, TTF_IPORT(4, "duration", "Strum Duration in Beats", 0.0, 4.0, .25,
 			lv2:scalePoint [ rdfs:label "Immediate" ; rdf:value 0.0 ] ;

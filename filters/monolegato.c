@@ -3,8 +3,8 @@ MFD_FILTER(monolegato)
 #ifdef MX_TTF
 
 	mflt:monolegato
-	TTF_DEFAULTDEF("MIDI Monophonic Legato")
-	, TTF_IPORT(0, "channelf", "Filter Channel",  0.0, 16.0,  0.0,
+	TTF_DEFAULTDEF("MIDI Monophonic Legato", "MIDI Mono Legato")
+	, TTF_IPORT(0, "channelf", "Filter Channel", 0, 16, 0,
 			PORTENUMZ("Any")
 			DOC_CHANF)
 	; rdfs:comment "Hold a note until the next note arrives. -- Play the same note again to switch it off."

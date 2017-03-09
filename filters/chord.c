@@ -3,36 +3,36 @@ MFD_FILTER(midichord)
 #ifdef MX_TTF
 
 	mflt:midichord
-	TTF_DEFAULTDEF("MIDI Chord")
-	, TTF_IPORT(0, "channelf", "Filter Channel",  0.0, 16.0,  0.0,
+	TTF_DEFAULTDEF("MIDI Chord", "MIDI Chord")
+	, TTF_IPORT(0, "channelf", "Filter Channel",  0, 16, 0,
 			PORTENUMZ("Any")
 			DOC_CHANF)
-	, TTF_IPORT(1, "scale", "Scale",  0.0, 11.0,  0.0,
+	, TTF_IPORT(1, "scale", "Scale",  0, 11,  0,
 			lv2:portProperty lv2:integer; lv2:portProperty lv2:enumeration;
-			lv2:scalePoint [ rdfs:label "C Major"  ; rdf:value 0.0 ] ;
-			lv2:scalePoint [ rdfs:label "C# Major" ; rdf:value 1.0 ] ;
-			lv2:scalePoint [ rdfs:label "D Major"  ; rdf:value 2.0 ] ;
-			lv2:scalePoint [ rdfs:label "D# Major" ; rdf:value 3.0 ] ;
-			lv2:scalePoint [ rdfs:label "E Major"  ; rdf:value 4.0 ] ;
-			lv2:scalePoint [ rdfs:label "F Major"  ; rdf:value 5.0 ] ;
-			lv2:scalePoint [ rdfs:label "F# Major" ; rdf:value 6.0 ] ;
-			lv2:scalePoint [ rdfs:label "G Major"  ; rdf:value 7.0 ] ;
-			lv2:scalePoint [ rdfs:label "G# Major" ; rdf:value 8.0 ] ;
-			lv2:scalePoint [ rdfs:label "A Major"  ; rdf:value 9.0 ] ;
-			lv2:scalePoint [ rdfs:label "A# Major" ; rdf:value 10.0 ] ;
-			lv2:scalePoint [ rdfs:label "B Major"  ; rdf:value 11.0 ] ;
+			lv2:scalePoint [ rdfs:label "C Major"  ; rdf:value 0 ] ;
+			lv2:scalePoint [ rdfs:label "C# Major" ; rdf:value 1 ] ;
+			lv2:scalePoint [ rdfs:label "D Major"  ; rdf:value 2 ] ;
+			lv2:scalePoint [ rdfs:label "D# Major" ; rdf:value 3 ] ;
+			lv2:scalePoint [ rdfs:label "E Major"  ; rdf:value 4 ] ;
+			lv2:scalePoint [ rdfs:label "F Major"  ; rdf:value 5 ] ;
+			lv2:scalePoint [ rdfs:label "F# Major" ; rdf:value 6 ] ;
+			lv2:scalePoint [ rdfs:label "G Major"  ; rdf:value 7 ] ;
+			lv2:scalePoint [ rdfs:label "G# Major" ; rdf:value 8 ] ;
+			lv2:scalePoint [ rdfs:label "A Major"  ; rdf:value 9 ] ;
+			lv2:scalePoint [ rdfs:label "A# Major" ; rdf:value 10 ] ;
+			lv2:scalePoint [ rdfs:label "B Major"  ; rdf:value 11 ] ;
 			rdfs:comment "Scale for the Chords."
 			)
-	, TTF_IPORTTOGGLE( 2, "c1",  "prime", 1.0)
-	, TTF_IPORTTOGGLE( 3, "c3",  "3rd", 1.0)
-	, TTF_IPORTTOGGLE( 4, "c5",  "5th", 1.0)
-	, TTF_IPORTTOGGLE( 5, "c6",  "6th", 0.0)
-	, TTF_IPORTTOGGLE( 6, "c7",  "7th", 0.0)
-	, TTF_IPORTTOGGLE( 7, "c8",  "octave", 1.0)
-	, TTF_IPORTTOGGLE( 8, "c9",  "9th", 0.0)
-	, TTF_IPORTTOGGLE( 9, "c11", "11th", 0.0)
-	, TTF_IPORTTOGGLE(10, "c13", "13th", 0.0)
-	, TTF_IPORTTOGGLE(11, "_8",  "bass", 0.0)
+	, TTF_IPORTTOGGLE( 2, "c1",  "prime",  1)
+	, TTF_IPORTTOGGLE( 3, "c3",  "3rd",    1)
+	, TTF_IPORTTOGGLE( 4, "c5",  "5th",    1)
+	, TTF_IPORTTOGGLE( 5, "c6",  "6th",    0)
+	, TTF_IPORTTOGGLE( 6, "c7",  "7th",    0)
+	, TTF_IPORTTOGGLE( 7, "c8",  "octave", 1)
+	, TTF_IPORTTOGGLE( 8, "c9",  "9th",    0)
+	, TTF_IPORTTOGGLE( 9, "c11", "11th",   0)
+	, TTF_IPORTTOGGLE(10, "c13", "13th",   0)
+	, TTF_IPORTTOGGLE(11, "_8",  "bass",   0)
 	; rdfs:comment "Harmonizer - make chords from single (fundamental) note in a given musical scale. The scale as well as intervals can be automated freely (currently held chords will change). Note-ons are latched, for multiple/combined chords only single note-on/off will be triggered for the duration of the combined chords. If a off-scale note is given, it will be passed through - no chord is allocated. Note: Combine this effect with the 'MIDI Enforce Scale' filter to weed them out." ;
 	.
 

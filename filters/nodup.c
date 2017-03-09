@@ -3,8 +3,8 @@ MFD_FILTER(nodup)
 #ifdef MX_TTF
 
 	mflt:nodup
-	TTF_DEFAULTDEF("MIDI Duplicate Blocker")
-	, TTF_IPORT(0, "channelf", "Filter Channel",  0.0, 16.0,  0.0,
+	TTF_DEFAULTDEF("MIDI Duplicate Blocker", "MIDI Dup. Block")
+	, TTF_IPORT(0, "channelf", "Filter Channel", 0, 16, 0,
 			PORTENUMZ("Any")
 			DOC_CHANF)
 	; rdfs:comment "MIDI Duplicate Blocker. Filter out overlapping note on/off and duplicate messages."

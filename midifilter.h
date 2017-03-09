@@ -45,6 +45,7 @@
 
 typedef struct {
 	LV2_URID atom_Blank;
+	LV2_URID atom_Object;
 	LV2_URID midi_MidiEvent;
 	LV2_URID atom_Sequence;
 	LV2_URID atom_Float;
@@ -90,7 +91,7 @@ typedef struct _MidiFilter{
 
 	float   memF[16];
 	int     memI[127];
-	int     memCI[16][127];
+	int     memCI[16][256];
 	short   memCS[16][127];
 	uint8_t memCM[16][127];
 

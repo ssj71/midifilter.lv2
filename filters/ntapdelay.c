@@ -3,13 +3,13 @@ MFD_FILTER(ntapdelay)
 #ifdef MX_TTF
 
 	mflt:ntapdelay
-	TTF_DEF("MIDI N-Tap Delay", ; atom:supports time:Position)
-	, TTF_IPORT(0, "channelf", "Filter Channel",  0.0, 16.0,  0.0,
+	TTF_DEF("MIDI N-Tap Delay", "MIDI N-Tap Delay", ; atom:supports time:Position)
+	, TTF_IPORT(0, "channelf", "Filter Channel", 0, 16, 0,
 			PORTENUMZ("Any")
 			DOC_CHANF)
-	, TTF_IPORT( 1, "bpmsrc",  "BPM source", 0.0, 1.0,  1.0,
-			lv2:scalePoint [ rdfs:label "Control Port" ; rdf:value 0.0 ] ;
-			lv2:scalePoint [ rdfs:label "Plugin Host (if available)" ; rdf:value 1.0 ] ;
+	, TTF_IPORT( 1, "bpmsrc",  "BPM source", 0, 1, 1,
+			lv2:scalePoint [ rdfs:label "Control Port" ; rdf:value 0 ] ;
+			lv2:scalePoint [ rdfs:label "Plugin Host (if available)" ; rdf:value 1 ] ;
 			lv2:portProperty lv2:integer; lv2:portProperty lv2:enumeration;
 			)
 	, TTF_IPORT(2, "delayBPM",  "BPM", 1.0, 280.0,  120.0, units:unit units:bpm;
@@ -24,12 +24,12 @@ MFD_FILTER(ntapdelay)
 			lv2:scalePoint [ rdfs:label "Two Bars" ; rdf:value 8.0 ] ;
 			lv2:scalePoint [ rdfs:label "Four Bars" ; rdf:value 16.0 ] ;
 			rdfs:comment "delay length in base-units")
-	, TTF_IPORT(4, "taps",  "Repeats", 0.0, 64, 3.0, lv2:portProperty lv2:integer;
-			lv2:scalePoint [ rdfs:label "until note-off" ; rdf:value 0.0 ] ;
+	, TTF_IPORT(4, "taps",  "Repeats", 0, 64, 3, lv2:portProperty lv2:integer;
+			lv2:scalePoint [ rdfs:label "until note-off" ; rdf:value 0 ] ;
 			rdfs:comment "Number of repeats")
 	, TTF_IPORT(5, "velocityadj",  "velocity ramp", -64.0, 64.0, -10.0,
 			rdfs:comment "Velocity change per repeat")
-	; rdfs:comment "This effect repeats notes N times. Where N is either a fixed number or unlimited as long as a given key is pressed. BPM and delay-time variable and allow tempo-ramps. On every repeat the given velocity-adjustment is added or subtracted, the result is clamped between 1 and 127."
+	; rdfs:comment "This effect repeats notes N times. Where N is either a fixed number or unlimited as long as a given key is pressed. BPM and delay-time variable allows tempo-ramps. On every repeat the given velocity-adjustment is added or subtracted, the result is clamped between 1 and 127."
 	.
 
 #elif defined MX_CODE
@@ -81,8 +81,6 @@ filter_midi_ntapdelay(MidiFilter* self,
 		filter_ntapdelay_panic(self, buffer[0]&0x0f, tme);
 	}
 
-	forge_midimessage(self, tme, buffer, size);
-
 	const uint8_t chs = midi_limit_chn(floorf(*self->cfg[0]) -1);
 	const uint8_t chn = buffer[0] & 0x0f;
 	uint8_t mst = buffer[0] & 0xf0;
@@ -92,10 +90,12 @@ filter_midi_ntapdelay(MidiFilter* self,
 			|| !(floorf(*self->cfg[0]) == 0 || chs == chn)
 		 )
 	{
+		forge_midimessage(self, tme, buffer, size);
 		return;
 	}
 
 	if ((self->memI[2] + 1) % self->memI[0] == self->memI[1]) {
+		forge_midimessage(self, tme, buffer, size);
 		return;
 	}
 
@@ -116,15 +116,32 @@ filter_midi_ntapdelay(MidiFilter* self,
 	if (mst == MIDI_NOTEON) {
 		self->memCI[chn][key] = tme + rint(grid * samples_per_beat);
 		self->memCM[chn][key] = vel;
+		if (self->memCS[chn][key] == 0) {
+				self->memCS[chn][key]++; // key active
+				forge_midimessage(self, tme, buffer, size);
+		}
 	}
 	else if (mst == MIDI_NOTEOFF) {
 		self->memCI[chn][key] = -1;
 		self->memCM[chn][key] = 0;
+		if (self->memCS[chn][key] > 0) {
+			self->memCS[chn][key]--;
+			if (self->memCS[chn][key] == 0) {
+				forge_midimessage(self, tme, buffer, size);
+			}
+		}
+
+	} else {
+		forge_midimessage(self, tme, buffer, size);
 	}
 
 	for (i=0; i < RAIL(*self->cfg[4], 0, 128); ++i) {
 		int delay = rint(grid * samples_per_beat * (i+1.0));
-		buf[2] = RAIL(rintf(vel + (i+1.0) * (*self->cfg[5])), 1, 127);
+		if (mst == MIDI_NOTEON) {
+			buf[2] = RAIL(rintf(vel + (i+1.0) * (*self->cfg[5])), 1, 127);
+		} else {
+			buf[2] = vel;
+		}
 		MidiEventQueue *qm = &(self->memQ[self->memI[2]]);
 		memcpy(qm->buf, buf, 3);
 		qm->size = size;
@@ -158,9 +175,9 @@ filter_preproc_ntapdelay(MidiFilter* self)
 	const float oldbpm = self->memF[0];
 	self->memF[0] = newbpm;
 
-	const float old_grid = RAIL((self->lcfg[3]), 1/256.0, 4.0);
+	const float old_grid = RAIL((self->lcfg[3]), 1/256.0, 16.0);
 	const double old_samples_per_beat = 60.0 / oldbpm * self->samplerate;
-	const float new_grid = RAIL((*self->cfg[3]), 1/256.0, 4.0);
+	const float new_grid = RAIL((*self->cfg[3]), 1/256.0, 16.0);
 	const double new_samples_per_beat = 60.0 / newbpm * self->samplerate;
 
 	const double fact = (new_grid * new_samples_per_beat) / (old_grid * old_samples_per_beat);
@@ -184,7 +201,6 @@ filter_postproc_ntapdelay(MidiFilter* self)
 	int i,c,k;
 	const int max_delay = self->memI[0];
 	const int roff = self->memI[1];
-	const int woff = self->memI[2];
 	const uint32_t n_samples = self->n_samples;
 	int skipped = 0;
 
@@ -193,7 +209,7 @@ filter_postproc_ntapdelay(MidiFilter* self)
 		bpm = self->bpm;
 	}
 	if (bpm <= 0) bpm = 60;
-	const float grid = RAIL((*self->cfg[3]), 1/256.0, 4.0);
+	const float grid = RAIL((*self->cfg[3]), 1/256.0, 16.0);
 	const double samples_per_beat = 60.0 / bpm * self->samplerate;
 
 	/* add note-on/off for held notes..
@@ -244,9 +260,37 @@ filter_postproc_ntapdelay(MidiFilter* self)
 		self->memCI[c][k] -= n_samples;
 	}
 
+	/* sort queue */
+	int pidx = -1;
+	for (i=0; i < max_delay; ++i) {
+		const int off = (i + roff) % max_delay;
+		if (off == self->memI[2]) {
+			break;
+		}
+		if (self->memQ[off].size == 0) {
+			continue;
+		}
+		if (self->memQ[off].size > 3) {
+			pidx = -1;
+			continue;
+		}
+		if (pidx < 0 || self->memQ[off].reltime >= self->memQ[pidx].reltime) {
+			pidx = off;
+			continue;
+		}
+		// swap
+		MidiEventQueue tmp;
+		memcpy(&tmp, &self->memQ[off], sizeof(MidiEventQueue));
+		memcpy(&self->memQ[off], &self->memQ[pidx], sizeof(MidiEventQueue));
+		memcpy(&self->memQ[pidx], &tmp, sizeof(MidiEventQueue));
+		pidx = off;
+	}
+
 	/* dequeue delayline */
 	for (i=0; i < max_delay; ++i) {
 		const int off = (i + roff) % max_delay;
+		if (off == self->memI[2]) break;
+
 		if (self->memQ[off].size > 0) {
 			if (self->memQ[off].reltime < n_samples) {
 
@@ -255,6 +299,7 @@ filter_postproc_ntapdelay(MidiFilter* self)
 					const uint8_t key = self->memQ[off].buf[1] & 0x7f;
 					self->memCS[chn][key]++;
 					if (self->memCS[chn][key] > 1) { // send a note-off first
+						//self->memCS[chn][key]--;
 						uint8_t buf[3];
 						buf[0] = MIDI_NOTEOFF | chn;
 						buf[1] = key; buf[2] = 0;
@@ -282,15 +327,14 @@ filter_postproc_ntapdelay(MidiFilter* self)
 				skipped = 1;
 			}
 		} else if (!skipped) self->memI[1] = off;
-
-		if (off == woff) break;
+		if (off == self->memI[2]) break;
 	}
 }
 
 void filter_init_ntapdelay(MidiFilter* self) {
 	int c,k;
 	srandom ((unsigned int) time (NULL));
-	self->memI[0] = MAX(self->samplerate / 8.0, 256);
+	self->memI[0] = MAX(self->samplerate / 8.0, 1024);
 	self->memI[1] = 0; // read-pointer
 	self->memI[2] = 0; // write-pointer
 	self->memQ = calloc(self->memI[0], sizeof(MidiEventQueue));

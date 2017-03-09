@@ -24,6 +24,11 @@
 #include <math.h>
 #include <time.h>
 
+#ifdef _WIN32
+#define random() rand()
+#define srandom(X) srand(X)
+#endif
+
 #include "midifilter.h"
 
 /******************************************************************************
@@ -100,9 +105,9 @@ forge_midimessage(MidiFilter* self,
 	midiatom.type = self->uris.midi_MidiEvent;
 	midiatom.size = size;
 
-	lv2_atom_forge_frame_time(&self->forge, tme);
-	lv2_atom_forge_raw(&self->forge, &midiatom, sizeof(LV2_Atom));
-	lv2_atom_forge_raw(&self->forge, buffer, size);
+	if (0 == lv2_atom_forge_frame_time(&self->forge, tme)) return;
+	if (0 == lv2_atom_forge_raw(&self->forge, &midiatom, sizeof(LV2_Atom))) return;
+	if (0 == lv2_atom_forge_raw(&self->forge, buffer, size)) return;
 	lv2_atom_forge_pad(&self->forge, sizeof(LV2_Atom) + size);
 }
 
@@ -151,7 +156,7 @@ update_position(MidiFilter* self, const LV2_Atom_Object* obj)
 		self->available_info |= NFO_BEAT;
 	}
 	if (fps && fps->type == uris->atom_Float) {
-		self->frames_per_second = ((LV2_Atom_Float*)frame)->body;
+		self->frames_per_second = ((LV2_Atom_Float*)fps)->body;
 		self->available_info |= NFO_FPS;
 	}
 	if (frame && frame->type == uris->atom_Long) {
@@ -192,7 +197,7 @@ run(LV2_Handle instance, uint32_t n_samples)
 		if (ev->body.type == self->uris.midi_MidiEvent) {
 			self->filter_fn(self, ev->time.frames, (uint8_t*)(ev+1), ev->body.size);
 		}
-		else if (ev->body.type == self->uris.atom_Blank) {
+		else if (ev->body.type == self->uris.atom_Blank || ev->body.type == self->uris.atom_Object) {
 			const LV2_Atom_Object* obj = (LV2_Atom_Object*)&ev->body;
 			if (obj->body.otype == self->uris.time_Position) {
 				update_position(self, obj);
@@ -207,10 +212,16 @@ run(LV2_Handle instance, uint32_t n_samples)
 
 	/* increment position for next cycle */
 	if (self->available_info & NFO_BEAT) {
-		const double samples_per_beat = 60.0 / self->bpm * self->samplerate;
-		self->bar_beats    += (double) n_samples / samples_per_beat;
-		self->beat_beats   = self->bar_beats - floor(self->bar_beats);
-		self->pos_bbt      = self->beat_beats * samples_per_beat;
+		float bpm = self->bpm;
+		if (self->available_info & NFO_SPEED) {
+			bpm *= self->speed;
+		}
+		if (bpm != 0) {
+			const double samples_per_beat = 60.0 * self->samplerate / bpm;
+			self->bar_beats    += (double) n_samples / samples_per_beat;
+			self->beat_beats   = self->bar_beats - floor(self->bar_beats);
+			self->pos_bbt      = self->beat_beats * samples_per_beat;
+		}
 	}
 	if (self->available_info & NFO_FRAME) {
 		self->pos_frame += n_samples;
@@ -232,6 +243,7 @@ static inline void
 map_mf_uris(LV2_URID_Map* map, MidiFilterURIs* uris)
 {
 	uris->atom_Blank         = map->map(map->handle, LV2_ATOM__Blank);
+	uris->atom_Object        = map->map(map->handle, LV2_ATOM__Object);
 	uris->midi_MidiEvent     = map->map(map->handle, LV2_MIDI__MidiEvent);
 	uris->atom_Sequence      = map->map(map->handle, LV2_ATOM__Sequence);
 
@@ -341,6 +353,13 @@ extension_data(const char* uri)
 #define LV2DESC(ID) \
 	case ID: return &(descriptor ## ID);
 
+
+#undef LV2_SYMBOL_EXPORT
+#ifdef _WIN32
+#    define LV2_SYMBOL_EXPORT __declspec(dllexport)
+#else
+#    define LV2_SYMBOL_EXPORT  __attribute__ ((visibility ("default")))
+#endif
 LV2_SYMBOL_EXPORT
 const LV2_Descriptor*
 lv2_descriptor(uint32_t index)

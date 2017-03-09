@@ -3,15 +3,15 @@ MFD_FILTER(mapcc)
 #ifdef MX_TTF
 
 	mflt:mapcc
-	TTF_DEFAULTDEF("MapCC")
-	, TTF_IPORT(0, "channelf", "Filter Channel",  0.0, 16.0,  0.0,
+	TTF_DEFAULTDEF("MIDI CC Map", "MIDI CC Map")
+	, TTF_IPORT(0, "channelf", "Filter Channel", 0, 16, 0,
 			PORTENUMZ("Any")
 			DOC_CHANF)
-	, TTF_IPORT(1, "ccin", "CC Input",  0.0, 127.0,  0.0,
+	, TTF_IPORT(1, "ccin", "CC Input", 0, 127, 0,
 			lv2:portProperty lv2:integer;
 			rdfs:comment "The control to change"
 			)
-	, TTF_IPORT(2, "ccout", "CC Output",  0.0, 127.0,  0.0,
+	, TTF_IPORT(2, "ccout", "CC Output", 0, 127, 0,
 			lv2:portProperty lv2:integer;
 			rdfs:comment "The target controller"
 			)
